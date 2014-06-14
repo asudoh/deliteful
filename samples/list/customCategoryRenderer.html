@@ -18,10 +18,11 @@
 
 	<script type="text/javascript">
 		require([
+			"dstore/Memory",
 			"delite/register",
 			"deliteful/list/CategoryRenderer",
 			"deliteful/list/List"
-		], function (register, CategoryRenderer) {
+		], function (Memory, register, CategoryRenderer) {
 			var MyCustomRenderer = register("d-cust-category", [HTMLElement, CategoryRenderer], {
 				template: "<template><div data-attach-point='renderNode'>{{item.category}}<div class='d-spacer'></div><a class='categoryLink' navindex='0' href='http://en.wikipedia.org/wiki/Special:Search?search={{item.category}}&go=Go'>Wikipedia</a><div></template>"
 			});
@@ -29,6 +30,7 @@
 			list.setAttribute("aria-label", "Sample list with custom category renderer");
 			list.categoryAttr = "cat";
 			list.categoryRenderer = MyCustomRenderer;
+			list.store = new Memory();
 			list.store.add({label: "Apple", cat: "Fruit"});
 			list.store.add({label: "Apricot", cat: "Fruit"});
 			list.store.add({label: "Banana", cat: "Fruit"});

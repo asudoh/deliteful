@@ -543,7 +543,7 @@ define([
 				list.destroy();
 			}
 		},
-		"itemAdded": function () {
+		"adding items": function () {
 			list = new PageableList();
 			var resetList = function () {
 				list._idPages = [[1, 2, 3], [4, 5, 6]];
@@ -551,47 +551,79 @@ define([
 				list._lastLoaded = 6;
 			};
 			resetList();
-			list.itemAdded(0, {id: "A"});
+			list.itemsSpliced([{
+				index: 0,
+				removedCount: 0,
+				added: [{id: "A"}]
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], [4, 5, 6]]);
 			assert.equal(list._firstLoaded, 2, "A");
 			assert.equal(list._lastLoaded, 7, "A");
 			resetList();
-			list.itemAdded(1, {id: "B"});
+			list.itemsSpliced([{
+				index: 1,
+				removedCount: 0,
+				added: [{id: "B"}]
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], [4, 5, 6]]);
 			assert.equal(list._firstLoaded, 2, "B");
 			assert.equal(list._lastLoaded, 7, "B");
 			resetList();
-			list.itemAdded(2, {id: "C"});
+			list.itemsSpliced([{
+				index: 2,
+				removedCount: 0,
+				added: [{id: "C"}]
+			}]);
 			assert.deepEqual(list._idPages, [[1, "C", 2, 3], [4, 5, 6]]);
 			assert.equal(list._firstLoaded, 1, "C");
 			assert.equal(list._lastLoaded, 7, "C");
 			resetList();
-			list.itemAdded(3, {id: "D"});
+			list.itemsSpliced([{
+				index: 3,
+				removedCount: 0,
+				added: [{id: "D"}]
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, "D", 3], [4, 5, 6]]);
 			assert.equal(list._firstLoaded, 1, "D");
 			assert.equal(list._lastLoaded, 7, "D");
 			resetList();
-			list.itemAdded(4, {id: "E"});
+			list.itemsSpliced([{
+				index: 4,
+				removedCount: 0,
+				added: [{id: "E"}]
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], ["E", 4, 5, 6]]);
 			assert.equal(list._firstLoaded, 1, "E");
 			assert.equal(list._lastLoaded, 7, "E");
 			resetList();
-			list.itemAdded(5, {id: "F"});
+			list.itemsSpliced([{
+				index: 5,
+				removedCount: 0,
+				added: [{id: "F"}]
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], [4, "F", 5, 6]]);
 			assert.equal(list._firstLoaded, 1, "F");
 			assert.equal(list._lastLoaded, 7, "F");
 			resetList();
-			list.itemAdded(6, {id: "G"});
+			list.itemsSpliced([{
+				index: 6,
+				removedCount: 0,
+				added: [{id: "G"}]
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], [4, 5, "G", 6]]);
 			assert.equal(list._firstLoaded, 1, "G");
 			assert.equal(list._lastLoaded, 7, "G");
 			resetList();
-			list.itemAdded(7, {id: "H"});
+			list.itemsSpliced([{
+				index: 7,
+				removedCount: 0,
+				added: [{id: "H"}]
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], [4, 5, 6]]);
 			assert.equal(list._firstLoaded, 1, "H");
 			assert.equal(list._lastLoaded, 6, "H");
 		},
-		"itemRemoved": function () {
+		"removing items": function () {
 			list = new PageableList();
 			var resetList = function () {
 				list._idPages = [[1, 2, 3], [4, 5, 6]];
@@ -599,42 +631,74 @@ define([
 				list._lastLoaded = 6;
 			};
 			resetList();
-			list.itemRemoved(0);
+			list.itemsSpliced([{
+				index: 0,
+				removedCount: 1,
+				added: []
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], [4, 5, 6]]);
 			assert.equal(list._firstLoaded, 0, "0");
 			assert.equal(list._lastLoaded, 5, "0");
 			resetList();
-			list.itemRemoved(1);
+			list.itemsSpliced([{
+				index: 1,
+				removedCount: 1,
+				added: []
+			}]);
 			assert.deepEqual(list._idPages, [[2, 3], [4, 5, 6]]);
 			assert.equal(list._firstLoaded, 1, "1");
 			assert.equal(list._lastLoaded, 5, "1");
 			resetList();
-			list.itemRemoved(2);
+			list.itemsSpliced([{
+				index: 2,
+				removedCount: 1,
+				added: []
+			}]);
 			assert.deepEqual(list._idPages, [[1, 3], [4, 5, 6]]);
 			assert.equal(list._firstLoaded, 1, "2");
 			assert.equal(list._lastLoaded, 5, "2");
 			resetList();
-			list.itemRemoved(3);
+			list.itemsSpliced([{
+				index: 3,
+				removedCount: 1,
+				added: []
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2], [4, 5, 6]]);
 			assert.equal(list._firstLoaded, 1, "3");
 			assert.equal(list._lastLoaded, 5, "3");
 			resetList();
-			list.itemRemoved(4);
+			list.itemsSpliced([{
+				index: 4,
+				removedCount: 1,
+				added: []
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], [5, 6]]);
 			assert.equal(list._firstLoaded, 1, "4");
 			assert.equal(list._lastLoaded, 5, "4");
 			resetList();
-			list.itemRemoved(5);
+			list.itemsSpliced([{
+				index: 5,
+				removedCount: 1,
+				added: []
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], [4, 6]]);
 			assert.equal(list._firstLoaded, 1, "5");
 			assert.equal(list._lastLoaded, 5, "5");
 			resetList();
-			list.itemRemoved(6);
+			list.itemsSpliced([{
+				index: 6,
+				removedCount: 1,
+				added: []
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], [4, 5]]);
 			assert.equal(list._firstLoaded, 1, "6");
 			assert.equal(list._lastLoaded, 5, "6");
 			resetList();
-			list.itemRemoved(7);
+			list.itemsSpliced([{
+				index: 7,
+				removedCount: 1,
+				added: []
+			}]);
 			assert.deepEqual(list._idPages, [[1, 2, 3], [4, 5, 6]]);
 			assert.equal(list._firstLoaded, 1, "7");
 			assert.equal(list._lastLoaded, 6, "7");

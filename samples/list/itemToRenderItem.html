@@ -18,9 +18,10 @@
 
 	<script type="text/javascript">
 		require([
+			"dstore/Memory",
 		    "delite/register",
 			"deliteful/list/List"
-		], function (register, List) {
+		], function (Memory, register, List) {
 			var list = register.createElement("d-list");
 			list.setAttribute("aria-label", "Sample list with custom itemToRenderItem method");
 			list.itemToRenderItem = function (item) {
@@ -29,6 +30,7 @@
 					righttext: item.title.split(" ")[0]
 				};
 			};
+			list.store = new Memory();
 			list.store.add({title: "first item"});
 			list.store.add({title: "second item"});
 			list.store.add({title: "third item"});

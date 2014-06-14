@@ -13,6 +13,7 @@ define([
 	"delite/StoreMap",
 	"delite/Invalidating",
 	"delite/Scrollable",
+	"liaison/ObservableArray",
 	"./ItemRenderer",
 	"./CategoryRenderer",
 	"./_DefaultStore",
@@ -20,7 +21,7 @@ define([
 	"delite/theme!./List/themes/{{theme}}/List_css",
 	"requirejs-dplugins/has!dojo-bidi?delite/theme!./List/themes/{{theme}}/List_rtl_css"
 ], function (dcl, register, on, lang, when, domClass, keys, CustomElement, Selection, KeyNav, StoreMap,
-		Invalidating, Scrollable, ItemRenderer, CategoryRenderer, DefaultStore, LoadingPanel) {
+		Invalidating, Scrollable, ObservableArray, ItemRenderer, CategoryRenderer, DefaultStore, LoadingPanel) {
 
 	// Register custom elements we use to support markup for adding items to the list store.
 	register("d-list-store", [HTMLElement, CustomElement]);
@@ -232,14 +233,15 @@ define([
 			this.setAttribute("aria-readonly", "true");
 		},
 
-		postCreate: function () {
-			//	Assign a default store to the list.
-			this.store = new DefaultStore(this);
+		postCreate: dcl.after(function () {
+			if (!this.store) {
+				this.store = new DefaultStore(this);
+			}
 			this._keyNavCodes[keys.PAGE_UP] = this._keyNavCodes[keys.HOME];
 			this._keyNavCodes[keys.PAGE_DOWN] = this._keyNavCodes[keys.END];
 			delete this._keyNavCodes[keys.HOME];
 			delete this._keyNavCodes[keys.END];
-		},
+		}),
 
 		startup: dcl.superCall(function (sup) {
 			// Starts the widget: parse the content of the widget node to clean it,
@@ -248,13 +250,18 @@ define([
 			//	before StoreMap.startup()
 			return function () {
 				// search for custom elements to populate the store
-				this._setBusy(true, true);
+				if (this.store) {
+					this._setBusy(true, true);
+				}
 				var children = Array.prototype.slice.call(this.children);
 				if (children.length) {
 					for (var i = 0; i < children.length; i++) {
 						var child = children[i];
 						if (child.tagName === "D-LIST-STORE") {
 							var data = JSON.parse("[" + child.textContent + "]");
+							if (data.length > 0 && !this.store) {
+								this.store = new DefaultStore();
+							}
 							for (var j = 0; j < data.length; j++) {
 								this.store.add(data[j]);
 							}
@@ -427,7 +434,7 @@ define([
 		 * @protected
 		 */
 		getIdentity: function (item) {
-			return this.store.getIdentity(item);
+			return this.store ? this.store.getIdentity(item) : item.id;
 		},
 
 		/**
@@ -821,75 +828,51 @@ define([
 
 		/**
 		 * Populate the list using the items retrieved from the store.
+		 * @method
 		 * @param {Object[]} items items retrieved from the store.
 		 * @protected
 		 */
 		initItems: function (items) {
+			this._setBusy(false, true);
 			this._empty();
 			this._renderNewItems(items, false);
-			this._setBusy(false, true);
 			this._dataLoaded = true;
+			this.emit("query-success", { renderItems: items, cancelable: false, bubbles: true });
 		},
 
 		/**
-		 * Function to call when an item is removed from the store, to update
-		 * the content of the list widget accordingly.
-		 * @param {number} index The index of the render item to remove.
-		 * @param {Object[]} renderItems Ignored by this implementation.
-		 * @param {boolean} keepSelection Set to true if the item should not be removed from the list of selected items.
+		 * Function to call when there are changes in `.renderItems`.
+		 * @param {Object[]} splices
+		 *     The change records of splice, slightly modified format of
+		 *     {@link http://wiki.ecmascript.org/doku.php?id=harmony:observe ES7 Array.observe()}.
 		 * @protected
 		 */
-		itemRemoved: function (index, renderItems, keepSelection) {
-			var renderer = this.getItemRendererByIndex(index);
-			if (renderer) {
-				this._removeRenderer(renderer, keepSelection);
-			}
+		itemsSpliced: function (splices) {
+			splices.forEach(function (splice) {
+				var i;
+				for (i = 0; i < splice.removedCount; i++) {
+					var renderer = this.getItemRendererByIndex(splice.index);
+					if (renderer) {
+						this._removeRenderer(renderer, splice.removedItemsWillBeBack);
+					}
+				}
+				for (i = 0; i < splice.added.length; i++) {
+					var index = splice.index + i,
+						newRenderer = this._createItemRenderer(splice.added[i]);
+					this._addItemRenderer(newRenderer, index);
+				}
+			}, this);
 		},
 
 		/**
-		 * Function to call when an item is added to the store, to update
-		 * the content of the list widget accordingly.
-		 * @param {number} index The index where to add the render item.
-		 * @param {Object} renderItem The render item to be added.
-		 * @param {Object[]} renderItems Ignored by this implementation.
-		 * @private
-		 */
-		itemAdded: function (index, renderItem, /*jshint unused:vars*/renderItems) {
-			var newRenderer = this._createItemRenderer(renderItem);
-			this._addItemRenderer(newRenderer, index);
-		},
-
-		/**
-		 * Function to call when an item is updated in the store, to update
-		 * the content of the list widget accordingly.
-		 * @param {number}  index The index of the render item to update.
-		 * @param {Object} renderItem The render item data the render item must be updated with.
-		 * @param {Object[]} renderItems Ignored by this implementation.
+		 * This method is called when there are collection mutations in store.
+		 * @param {Object[]} splices
+		 *     The change records of splice, slightly modified format of
+		 *     {@link http://wiki.ecmascript.org/doku.php?id=harmony:observe ES7 Array.observe()}.
 		 * @protected
 		 */
-		itemUpdated: function (index,  renderItem, /*jshint unused:vars*/renderItems) {
-			var renderer = this.getItemRendererByIndex(index);
-			if (renderer) {
-				renderer.item = renderItem;
-			}
-		},
-
-		itemMoved: function (previousIndex, newIndex, renderItem, renderItems) {
-			// summary:
-			//		Function to call when an item is moved in the store, to update
-			//		the content of the list widget accordingly.
-			// previousIndex: Number
-			//		The previous index of the render item.
-			// newIndex: Number
-			//		The new index of the render item.
-			// renderItem: Object
-			//		The render item to be moved.
-			// renderItems: Array
-			//		Ignored by this implementation.
-			// tags:
-			//		protected
-			this.itemRemoved(previousIndex, renderItems, true);
-			this.itemAdded(newIndex - (previousIndex < newIndex ? 1 : 0), renderItem, renderItems);
+		storeItemsSpliced: function (splices) {
+			this.itemsSpliced(splices);
 		},
 
 		//////////// delite/Scrollable extension ///////////////////////////////////////

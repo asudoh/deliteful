@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+	<meta name="viewport"
+		  content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"/>
+	<meta name="apple-mobile-web-app-capable" content="yes"/>
+
+	<title>deliteful/list/List samples.</title>
+
+	<script type="text/javascript" src="../../../../requirejs/require.js"></script>
+
+	<script type="text/javascript">
+		require.config({
+			baseUrl: "../../../../"
+		});
+	</script>
+
+	<script type="text/javascript">
+		require([
+			"delite/register",
+			"deliteful/list/CategoryRenderer",
+			"liaison/ObservableArray",
+			"deliteful/list/List"
+		], function (register, CategoryRenderer, ObservableArray) {
+			var MyCustomRenderer = register("d-cust-category", [HTMLElement, CategoryRenderer], {
+				render: function () {
+					this.renderNode.innerHTML = "<div>" + this.item.category + "</div><div class='d-spacer'></div><a class='categoryLink' href='http://en.wikipedia.org/wiki/Special:Search?search=" + this.item.category + "&go=Go' navindex='0'>Wikipedia</a>";
+				}
+			});
+			var list = register.createElement("d-list");
+			list.setAttribute("aria-label", "Sample list with custom category renderer");
+			list.categoryAttr = "category";
+			list.categoryRenderer = MyCustomRenderer;
+			list.renderItems = new ObservableArray(
+				{label: "Apple", category: "Fruit"},
+				{label: "Apricot", category: "Fruit"},
+				{label: "Banana", category: "Fruit"},
+				{label: "Orange", category: "Fruit"},
+				{label: "Pear", category: "Fruit"},
+				{label: "Strawberry", category: "Fruit"},
+				{label: "Brussel sprout", category: "Vegetable"},
+				{label: "Cabbage", category: "Vegetable"},
+				{label: "Kale", category: "Vegetable"},
+				{label: "Lettuce", category: "Vegetable"}
+			);
+			document.body.appendChild(list);
+			list.startup();
+
+			addEntry = function (event) {
+				var labelElem = document.getElementById("newLabel"),
+					categoryElem = document.getElementById("newCategory");
+				list.renderItems.push({
+					label: labelElem.value,
+					category: categoryElem.value
+				});
+				labelElem.value = categoryElem.value = "";
+				event.preventDefault();
+			};
+		});
+	</script>
+	
+	<style>
+		.d-list-category {
+			background-image: none;
+			background-color: green;
+			color: white;
+			height: 45px;
+		}
+		.categoryLink {
+			color: white;
+			font-size: small;
+		}
+	</style>
+</head>
+<body role="application">
+	<div>This sample demonstrate how to write a custom category renderer.</div>
+	<div>
+		<form onsubmit="addEntry(event)">
+			<label for="newLabel">Label:</label>
+			<input id="newLabel" type="text" placeholder="Enter new title" autofocus>
+			<label for="newCategory">Category:</label>
+			<input id="newCategory" type="text" placeholder="Enter new category" autofocus>
+			<input type="submit" value="Add">
+		</form>
+	</div>
+</body>
+</html>

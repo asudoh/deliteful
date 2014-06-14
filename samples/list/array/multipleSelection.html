@@ -8,11 +8,11 @@
 
 	<title>deliteful/list/List samples.</title>
 
-	<script type="text/javascript" src="../../../requirejs/require.js"></script>
+	<script type="text/javascript" src="../../../../requirejs/require.js"></script>
 
 	<script type="text/javascript">
 		require.config({
-			baseUrl: "../../../"
+			baseUrl: "../../../../"
 		});
 	</script>
 
@@ -20,21 +20,23 @@
 		require([
 			"delite/register",
 			"dojo/on",
-			"dstore/Memory",
+			"liaison/ObservableArray",
 			"deliteful/list/List"
-		], function (register, on, Memory) {
+		], function (register, on, ObservableArray) {
  			var console = document.createElement("div");
 			console.innerHTML = "Click to select an item.";
 			document.body.appendChild(console);
-			var list = register.createElement("d-list");
+			var seq = 0,
+				list = register.createElement("d-list");
 			list.setAttribute("aria-label", "Sample list with multiple selection mode enabled");
 			list.selectionMode = "multiple";
-			list.store = new Memory();
-			list.store.add({label: "first item"});
-			list.store.add({label: "second item"});
-			list.store.add({label: "third item"});
-			list.store.add({label: "fourth item"});
-			list.store.add({label: "fifth item"});
+			list.renderItems = new ObservableArray(
+				{id: seq++, label: "first item"},
+				{id: seq++, label: "second item"},
+				{id: seq++, label: "third item"},
+				{id: seq++, label: "fourth item"},
+				{id: seq++, label: "fifth item"}
+			);
 			list.on("selection-change", function (event) {
 				if (event.newValue) {
 					console.innerHTML = "Current selection: " + this.selectedItems.map(function (item, index, array) {return item.label;}, this).join(", ");
@@ -44,10 +46,26 @@
 			}.bind(list));
 			document.body.appendChild(list);
 			list.startup();
+
+			addEntry = function (event) {
+				var labelElem = document.getElementById("newLabel");
+				list.renderItems.push({
+					id: seq++,
+					label: labelElem.value
+				});
+				labelElem.value = "";
+				event.preventDefault();
+			};
 		});
 	</script>
 </head>
 <body role="application">
-	This sample demonstrate a list with multiple selection mode enabled.
+	<div>This sample demonstrate a list with multiple selection mode enabled.</div>
+	<div>
+		<form onsubmit="addEntry(event)">
+			<label for="newLabel">Title:</label>
+			<input id="newLabel" type="text" placeholder="Enter new title" autofocus>
+		</form>
+	</div>
 </body>
 </html>

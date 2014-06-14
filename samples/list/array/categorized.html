@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+	<meta name="viewport"
+		  content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"/>
+	<meta name="apple-mobile-web-app-capable" content="yes"/>
+
+	<title>deliteful/list/List samples.</title>
+
+	<script type="text/javascript" src="../../../../requirejs/require.js"></script>
+
+	<script type="text/javascript">
+		require.config({
+			baseUrl: "../../../../"
+		});
+	</script>
+
+	<script type="text/javascript">
+		require([
+		    "delite/register",
+			"deliteful/list/List",
+			"liaison/ObservableArray"
+		], function (register, List, ObservableArray) {
+			var list = register.createElement("d-list");
+			list.setAttribute("aria-label", "Sample categorized list");
+			list.categoryAttr = "category";
+			list.renderItems = new ObservableArray(
+				{label: "first item", category: "Category A"},
+				{label: "second item", category: "Category A"},
+				{label: "third item", category: "Category A"},
+				{label: "fourth item", category: "Category B"},
+				{label: "fifth item", category: "Category B"}
+			);
+			document.body.appendChild(list);
+			list.startup();
+
+			addEntry = function (event) {
+				var labelElem = document.getElementById("newLabel"),
+					categoryElem = document.getElementById("newCategory");
+				list.renderItems.push({
+					label: labelElem.value,
+					category: categoryElem.value
+				});
+				labelElem.value = categoryElem.value = "";
+				event.preventDefault();
+			};
+		});
+	</script>
+</head>
+<body role="application">
+	<div>This sample demonstrate a categorized list.</div>
+	<div>
+		<form onsubmit="addEntry(event)">
+			<label for="newLabel">Label:</label>
+			<input id="newLabel" type="text" placeholder="Enter new title" autofocus>
+			<label for="newCategory">Category:</label>
+			<input id="newCategory" type="text" placeholder="Enter new category" autofocus>
+			<input type="submit" value="Add">
+		</form>
+	</div>
+</body>
+</html>

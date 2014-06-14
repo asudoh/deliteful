@@ -693,44 +693,57 @@ define([
 
 		//////////// List methods overriding ///////////////////////////////////////
 
-		itemRemoved: dcl.superCall(function (sup) {
-			return function (index) {
-				if (this._firstLoaded <= index && index <= this._lastLoaded) {
-					// Remove the item id in _idPages
-					this._updateIdPages(false, index);
-					sup.call(this, index - this._firstLoaded);
-				}
-				if (index < this._firstLoaded) {
-					this._firstLoaded--;
-				}
-				if (index <= this._lastLoaded) {
-					this._lastLoaded--;
-				}
-				if (this._firstLoaded === 0 && this._previousPageLoader) {
-					this._previousPageLoader.destroy();
-					this._previousPageLoader = null;
-				}
-			};
-		}),
-
-		itemAdded: dcl.superCall(function (sup) {
-			return function (index, item) {
-				if (this._firstLoaded < index && index <= this._lastLoaded) {
-					// Add the item id in _idPages
-					this._updateIdPages(true, index, this.getIdentity(item));
-					this._lastLoaded++;
-					sup.call(this, index - this._firstLoaded, item);
-				} else if (index <= this._firstLoaded) {
-					this._firstLoaded++;
-					this._lastLoaded++;
-					if (!this._previousPageLoader) {
-						this._createPreviousPageLoader();
+		itemsSpliced: dcl.superCall(function (sup) {
+			return function (splices) {
+				var self = this;
+				sup.call(this, splices.reduce(function (splices, splice) {
+					var index = splice.index;
+					for (var i = 0; i < splice.removedCount; i++) {
+						if (self._firstLoaded <= index && index <= self._lastLoaded) {
+							// Remove the item id in _idPages
+							self._updateIdPages(false, index);
+							splices.push({
+								index: index - self._firstLoaded,
+								removedCount: 1,
+								added: []
+							});
+						}
+						if (index < self._firstLoaded) {
+							self._firstLoaded--;
+						}
+						if (index <= self._lastLoaded) {
+							self._lastLoaded--;
+						}
+						if (self._firstLoaded === 0 && self._previousPageLoader) {
+							self._previousPageLoader.destroy();
+							self._previousPageLoader = null;
+						}
 					}
-				} else if (index > this._lastLoaded) {
-					if (!this._nextPageLoader) {
-						this._createNextPageLoader();
-					}
-				}
+					splice.added.forEach(function (item, i) {
+						var index = splice.index + i;
+						if (self._firstLoaded < index && index <= self._lastLoaded) {
+							// Add the item id in _idPages
+							self._updateIdPages(true, index, self.getIdentity(item));
+							self._lastLoaded++;
+							splices.push({
+								index: index - self._firstLoaded,
+								removedCount: 0,
+								added: [item]
+							});
+						} else if (index <= self._firstLoaded) {
+							self._firstLoaded++;
+							self._lastLoaded++;
+							if (!self._previousPageLoader) {
+								self._createPreviousPageLoader();
+							}
+						} else if (index > self._lastLoaded) {
+							if (!self._nextPageLoader) {
+								self._createNextPageLoader();
+							}
+						}
+					});
+					return splices;
+				}, []));
 			};
 		}),
 

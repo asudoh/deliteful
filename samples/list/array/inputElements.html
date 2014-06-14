@@ -8,21 +8,21 @@
 
 	<title>deliteful/list/List samples.</title>
 
-	<script type="text/javascript" src="../../../requirejs/require.js"></script>
+	<script type="text/javascript" src="../../../../requirejs/require.js"></script>
 
 	<script type="text/javascript">
 		require.config({
-			baseUrl: "../../../"
+			baseUrl: "../../../../"
 		});
 	</script>
 
 	<script type="text/javascript">
 		require([
-			"dstore/Memory",
 			"delite/register",
 			"deliteful/list/ItemRenderer",
+			"liaison/ObservableArray",
 			"deliteful/list/List"
-		], function (Memory, register, ItemRenderer) {
+		], function (register, ItemRenderer, ObservableArray) {
 			var MyCustomRenderer = register("d-configuration-item", [HTMLElement, ItemRenderer], {
 				template: "<template><div data-attach-point='renderNode'></div></template>",
 				_setItemAttr: function (item) {
@@ -54,13 +54,14 @@
 			list.setAttribute("aria-label", "Sample list of input elements");
 			list.itemRenderer = MyCustomRenderer;
 			list.copyAllItemProps = true;
-			list.store = new Memory();
-			list.store.add({elementTag: "A", elementAttrs: {href: "http://en.wikipedia.org/wiki/Wikipedia:About", innerHTML: "About"}});
-			list.store.add({label: "Multitasking gestures", elementTag: "INPUT", elementAttrs: {type: "checkbox", value: "multitasking"}});
-			list.store.add({label: "Volume", elementTag: "INPUT", elementAttrs: {type: "range"}});
-			list.store.add({label: "Login", elementTag: "INPUT", elementAttrs: {type: "text"}});
-			list.store.add({label: "Apex ringtone", elementTag: "INPUT", elementAttrs: {type: "radio", name: "ringtone", value: "apex", checked: true}});
-			list.store.add({label: "Beacon ringtone", elementTag: "INPUT", elementAttrs: {type: "radio", name: "ringtone", value: "beacon"}});
+			list.renderItems = new ObservableArray(
+				{elementTag: "A", elementAttrs: {href: "http://en.wikipedia.org/wiki/Wikipedia:About", innerHTML: "About"}},
+				{label: "Multitasking gestures", elementTag: "INPUT", elementAttrs: {type: "checkbox", value: "multitasking"}},
+				{label: "Volume", elementTag: "INPUT", elementAttrs: {type: "range"}},
+				{label: "Login", elementTag: "INPUT", elementAttrs: {type: "text"}},
+				{label: "Apex ringtone", elementTag: "INPUT", elementAttrs: {type: "radio", name: "ringtone", value: "apex", checked: true}},
+				{label: "Beacon ringtone", elementTag: "INPUT", elementAttrs: {type: "radio", name: "ringtone", value: "beacon"}}
+			);
 			document.body.appendChild(list);
 			list.startup();
 			list.setAttribute("aria-readonly", "false");

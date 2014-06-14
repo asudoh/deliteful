@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"/>
+	<meta name="apple-mobile-web-app-capable" content="yes"/>
+	<title>List from array</title>
+
+	<script type="text/javascript" src="../../../../requirejs/require.js"></script>
+
+	<script type="text/javascript">
+		require.config({
+			baseUrl: "../../../../"
+		});
+	</script>
+
+	<script type="text/javascript">
+		require([
+			"delite/register",
+			"liaison/ObservableArray",
+			"deliteful/list/List",
+			"dojo/domReady!"
+		], function (register, ObservableArray) {
+			var seq = 0,
+				items = typeof Array.observe === "function" ? [] : new ObservableArray();
+
+			for (var i = 0; i < 16; ++i) {
+				var id = seq++;
+				items.push({label: "Programmatic item of order " + id, id: id});
+			}
+
+			addEntry = function (event) {
+				var elem = document.getElementById("newTitle");
+				items.unshift({label: elem.value, id: seq++});
+				elem.value = "";
+				event.preventDefault();
+			};
+
+			removeEntry = function () {
+				var elem = document.getElementById("itemIndex"),
+					index = -1;
+				items.some(function (item, i) {
+					if (item.id === +elem.value) {
+						index = i;
+						return true;
+					}
+				}, this);
+				if (index >= 0) {
+					items.splice(index, 1);
+				}
+			};
+
+			var list = document.querySelector("d-list");
+			list.renderItems = items;
+			register.upgrade(list);
+			list.startup();
+		});
+	</script>
+	<style>
+		html {
+			width: 100%;
+			margin: 0;
+			padding: 0;
+		}
+		
+		body {
+			font-family: Helvetica;
+			font-size: 17px;
+			background-color: #c5ccd3;
+		}		
+	</style>
+</head>
+<body>
+ 	<h2>List from array</h2>
+	<div>
+		<form onsubmit="addEntry(event)">
+			<input id="newTitle" type="text" placeholder="Enter new entry" autofocus>
+		</form>
+	</div>
+	<div>
+	 	<label for="itemIndex">Programmatic item of order </label>
+	 	<input id="itemIndex" type="number" min="0" max="99">
+	 	<button onclick="removeEntry()">Remove</button>
+	</div>
+	<d-list></d-list>
+</body>
+</html>

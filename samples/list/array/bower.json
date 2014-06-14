@@ -1,0 +1,7 @@
+{
+	"name": "deliteful-samples-list-array",
+	"version": "0.1.0-dev",
+	"dependencies": {
+		"liaison": "#master"
+	}
+}

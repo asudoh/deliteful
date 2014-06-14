@@ -144,11 +144,18 @@ define([
 							0, this.data.splice(existingIndex, 1)[0]);
 					this._reindex(Math.min(beforeIndex, existingIndex), Math.max(beforeIndex, existingIndex));
 					if (this._queried) {
-						this.list.itemMoved(existingIndex, beforeIndex, this.list.itemToRenderItem(item), null);
+						this.list._storeItemUpdated({
+							previousIndex: existingIndex,
+							index: beforeIndex,
+							target: item
+						});
 					}
 				} else {
 					if (this._queried) {
-						this.list.itemUpdated(existingIndex, this.list.itemToRenderItem(item), null);
+						this.list._storeItemUpdated({
+							index: existingIndex,
+							target: item
+						});
 					}
 				}
 			} else {
@@ -162,8 +169,10 @@ define([
 					this._index[this.getIdentity(item)] = this.data.length - 1;
 				}
 				if (this._queried) {
-					this.list.itemAdded(beforeIndex !== undefined ? beforeIndex : this.data.length - 1,
-							this.list.itemToRenderItem(item), null);
+					this.list._storeItemAdded({
+						index: beforeIndex !== undefined ? beforeIndex : this.data.length - 1,
+						target: item
+					});
 				}
 			}
 			return id;
@@ -207,7 +216,9 @@ define([
 				delete this._index[id];
 				this._reindex(index, this.data.length - 1);
 				if (this._queried) {
-					this.list.itemRemoved(index, null, false);
+					this.list._storeItemRemoved({
+						previousIndex: index
+					});
 				}
 				return true;
 			}
